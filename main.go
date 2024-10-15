@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -16,17 +15,17 @@ type Task struct {
 	Completed   bool   `json:"completed"`   // Статус задачи (выполнена или нет)
 }
 
-var Tasks []Task
+//var Tasks []Task
 
 func main() {
 
 	fmt.Println("Open file")
 
-	file, err := os.OpenFile("TestFile.json", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+	//file, err := os.OpenFile("TestFile.json", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 
-	if err != nil {
-		panic(err)
-	}
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	fmt.Println("запись в формате команда - задача - описание задачи: ")
 
@@ -42,23 +41,51 @@ func main() {
 
 		words := strings.Split(input, " - ")
 
-		i := Task{ID: words[3], Name: words[1], Description: words[2], Completed: false}
+		i := Task{
+			ID:          words[3],
+			Name:        words[1],
+			Description: words[2],
+			Completed:   false,
+		}
 
-		data, err := json.Marshal(i)
+		var tasks []Task
+
+		dataFile, err := os.ReadFile("TestFile.json")
+
+		err = json.Unmarshal(dataFile, &tasks)
 
 		if err != nil {
 			fmt.Println("Ошибка:", err)
 			return
 		}
 
-		_, err = file.Write(data)
+		var founTasks []Task
+
+		founTasks = append(founTasks, i)
+
+		for Num := 0; Num < len(tasks); Num++ {
+			founTasks = append(founTasks, tasks[Num])
+		}
+
+		//founTasks = append(founTasks, i, tasks[0])
+
+		err = clearJSONfile("TestFile.json", founTasks)
+
+		//data, err := json.Marshal(founTasks)
+
+		if err != nil {
+			fmt.Println("Ошибка:", err)
+			return
+		}
+
+		//_, err = file.Write(data)
 
 		fmt.Println("Save file!")
 
-		if err != nil {
-			fmt.Println("Ошибка при записи в файл:", err)
-			return
-		}
+		//if err != nil {
+		//	fmt.Println("Ошибка при записи в файл:", err)
+		//	return
+		//}
 
 	}
 
@@ -66,10 +93,9 @@ func main() {
 
 		words := strings.Split(input, " ")
 
-		//jsonData := `{"id":1}`
 		var tasks []Task
 
-		data, err := ioutil.ReadFile("TestFile.json")
+		data, err := os.ReadFile("TestFile.json")
 		if err != nil {
 			fmt.Println("Ошибка чтения файла:", err)
 			return
@@ -84,15 +110,21 @@ func main() {
 
 		otvet := SearchFile(tasks, words[1])
 
-		otvet[0].Completed = true
+		//otvet[0].Completed = true
 
-		//err = clearJSONfile("TestFile.json")
+		if otvet != nil {
+			for Num := 0; Num < len(tasks); Num++ {
+				if tasks[Num].ID == otvet.ID {
+					tasks[Num].Completed = true
+					break
+				}
+			}
 
-		data, err = json.MarshalIndent(otvet, "", "")
+			err = clearJSONfile("TestFile.json", tasks)
 
-		_, err = file.Write(data)
-
-		fmt.Println(otvet)
+		} else {
+			fmt.Println("ID не найден")
+		}
 
 	}
 
@@ -100,23 +132,22 @@ func main() {
 
 }
 
-func SearchFile(tasks []Task, name string) []Task {
-
-	var founTask []Task
+func SearchFile(tasks []Task, name string) *Task {
 
 	for i, task := range tasks {
 
 		if task.ID == name {
-			founTask = append(founTask, tasks[i])
+			return &tasks[i]
+			break
 		}
 
 	}
 
-	return founTask
+	return nil
 
 }
 
-func clearJSONfile(filename string) error {
+func clearJSONfile(filename string, Massive []Task) error {
 
 	file, err := os.Create(filename)
 
@@ -126,7 +157,7 @@ func clearJSONfile(filename string) error {
 
 	defer file.Close()
 
-	emptyTasks := []Task{}
+	emptyTasks := Massive
 
 	encoder := json.NewEncoder(file)
 	err = encoder.Encode(emptyTasks)
