@@ -27,28 +27,21 @@ func main() {
 		return
 	}
 
-	if strings.Contains(input, "add") {
+	input = strings.TrimSpace(input)
 
+	command := strings.Split(input, " ")[0]
+
+	switch command {
+	case "add":
 		addTask(input)
-
-	}
-
-	if strings.Contains(input, "complete") {
-
+	case "complete":
 		completeTask(input)
-
-	}
-
-	if strings.Contains(input, "delete") {
-
+	case "delete":
 		deleteTask(input)
-
-	}
-
-	if strings.Contains(input, "show") {
-
+	case "show":
 		showTask(input)
-
+	default:
+		fmt.Println("Неизвестная команда. Доступные команды: add, complete, delete, show")
 	}
 
 }
@@ -56,12 +49,9 @@ func main() {
 func SearchFile(tasks []Task, name string) *Task {
 
 	for i, task := range tasks {
-
 		if task.ID == name {
 			return &tasks[i]
-			break
 		}
-
 	}
 
 	return nil
@@ -198,16 +188,16 @@ func deleteTask(input string) {
 	var DelTasks []Task
 
 	for i := 0; i < len(tasks); i++ {
-
 		if tasks[i].ID != words[1] {
-
 			DelTasks = append(DelTasks, tasks[i])
-
 		}
-
 	}
 
-	clearJSONfile("TestFile.json", DelTasks)
+	err = clearJSONfile("TestFile.json", DelTasks)
+
+	if err != nil {
+		fmt.Println("Ошибка: ", err)
+	}
 
 }
 
