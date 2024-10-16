@@ -198,7 +198,6 @@ func main() {
 	}
 
 	fmt.Println("Close file!")
-	fmt.Println("Close file!")
 
 }
 
