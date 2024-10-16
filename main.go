@@ -51,6 +51,8 @@ func main() {
 
 	}
 
+	showTask(input)
+
 }
 
 func SearchFile(tasks []Task, name string) *Task {
