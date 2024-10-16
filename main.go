@@ -59,6 +59,13 @@ func main() {
 			return
 		}
 
+		CheckTasks := SearchFile(tasks, words[3])
+
+		if CheckTasks != nil {
+			fmt.Println("ID же есть:", CheckTasks.ID)
+			return
+		}
+
 		var founTasks []Task
 
 		founTasks = append(founTasks, i)
@@ -124,6 +131,68 @@ func main() {
 
 		} else {
 			fmt.Println("ID не найден")
+		}
+
+	}
+
+	if strings.Contains(input, "delete") {
+
+		words := strings.Split(input, " ")
+
+		var tasks []Task
+
+		data, err := os.ReadFile("TestFile.json")
+		if err != nil {
+			fmt.Println("Ошибка чтения файла:", err)
+			return
+		}
+
+		err = json.Unmarshal(data, &tasks)
+
+		if err != nil {
+			fmt.Println("Ошибка десериализации JSON:", err)
+			return
+		}
+
+		var DelTasks []Task
+
+		for i := 0; i < len(tasks); i++ {
+
+			if tasks[i].ID != words[1] {
+
+				DelTasks = append(DelTasks, tasks[i])
+
+			}
+
+		}
+
+		clearJSONfile("TestFile.json", DelTasks)
+
+	}
+
+	if strings.Contains(input, "show") {
+
+		words := strings.Split(input, " ")
+
+		var tasks []Task
+
+		data, err := os.ReadFile("TestFile.json")
+		if err != nil {
+			fmt.Println("Ошибка чтения файла:", err)
+			return
+		}
+
+		err = json.Unmarshal(data, &tasks)
+
+		if err != nil {
+			fmt.Println("Ошибка десериализации JSON:", err)
+			return
+		}
+
+		for i := 0; i < len(tasks); i++ {
+			if tasks[i].ID == words[1] {
+				fmt.Println(tasks[i].Name, tasks[i].Description, tasks[i].Completed)
+			}
 		}
 
 	}
