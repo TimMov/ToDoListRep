@@ -31,15 +31,26 @@ func main() {
 
 	command := strings.Split(input, " ")[0]
 
+	dataFile, err := os.ReadFile("TestFile.json")
+
+	if err != nil {
+		fmt.Println("Ошибка: ", err)
+		return
+	}
+
+	var tasks []Task
+
 	switch command {
 	case "add":
-		addTask(input)
+		addTask(input, dataFile, tasks)
 	case "complete":
-		completeTask(input)
+		completeTask(input, dataFile, tasks)
 	case "delete":
-		deleteTask(input)
+		deleteTask(input, dataFile, tasks)
 	case "show":
-		showTask(input)
+		showTask(input, dataFile, tasks)
+	case "exit":
+		return
 	default:
 		fmt.Println("Неизвестная команда. Доступные команды: add, complete, delete, show")
 	}
@@ -81,7 +92,7 @@ func clearJSONfile(filename string, Massive []Task) error {
 
 }
 
-func addTask(input string) {
+func addTask(input string, dataFile []byte, tasks []Task) {
 
 	words := strings.Split(input, " - ")
 
@@ -92,11 +103,7 @@ func addTask(input string) {
 		Completed:   false,
 	}
 
-	var tasks []Task
-
-	dataFile, err := os.ReadFile("TestFile.json")
-
-	err = json.Unmarshal(dataFile, &tasks)
+	err := json.Unmarshal(dataFile, &tasks)
 
 	if err != nil {
 		fmt.Println("Ошибка:", err)
@@ -129,19 +136,11 @@ func addTask(input string) {
 
 }
 
-func completeTask(input string) {
+func completeTask(input string, dataFile []byte, tasks []Task) {
 
 	words := strings.Split(input, " ")
 
-	var tasks []Task
-
-	data, err := os.ReadFile("TestFile.json")
-	if err != nil {
-		fmt.Println("Ошибка чтения файла:", err)
-		return
-	}
-
-	err = json.Unmarshal(data, &tasks)
+	err := json.Unmarshal(dataFile, &tasks)
 
 	if err != nil {
 		fmt.Println("Ошибка десериализации JSON:", err)
@@ -160,25 +159,20 @@ func completeTask(input string) {
 
 		err = clearJSONfile("TestFile.json", tasks)
 
+		fmt.Println("Задача ", otvet.ID, " выполнена")
+
 	} else {
 		fmt.Println("ID не найден")
+		return
 	}
 
 }
 
-func deleteTask(input string) {
+func deleteTask(input string, dataFile []byte, tasks []Task) {
 
 	words := strings.Split(input, " ")
 
-	var tasks []Task
-
-	data, err := os.ReadFile("TestFile.json")
-	if err != nil {
-		fmt.Println("Ошибка чтения файла:", err)
-		return
-	}
-
-	err = json.Unmarshal(data, &tasks)
+	err := json.Unmarshal(dataFile, &tasks)
 
 	if err != nil {
 		fmt.Println("Ошибка десериализации JSON:", err)
@@ -197,23 +191,16 @@ func deleteTask(input string) {
 
 	if err != nil {
 		fmt.Println("Ошибка: ", err)
+		return
 	}
 
 }
 
-func showTask(input string) {
+func showTask(input string, dataFile []byte, tasks []Task) {
 
 	words := strings.Split(input, " ")
 
-	var tasks []Task
-
-	data, err := os.ReadFile("TestFile.json")
-	if err != nil {
-		fmt.Println("Ошибка чтения файла:", err)
-		return
-	}
-
-	err = json.Unmarshal(data, &tasks)
+	err := json.Unmarshal(dataFile, &tasks)
 
 	if err != nil {
 		fmt.Println("Ошибка десериализации JSON:", err)
