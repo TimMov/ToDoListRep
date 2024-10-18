@@ -2,8 +2,11 @@ package main
 
 import (
 	"bufio"
+	"database/sql"
+	_ "database/sql"
 	"encoding/json"
 	"fmt"
+	_ "github.com/lib/pq"
 	"os"
 	"strings"
 )
@@ -43,6 +46,8 @@ func main() {
 	switch command {
 	case "add":
 		addTask(input, dataFile, tasks)
+	case "addProfile":
+		addProfile(input)
 	case "complete":
 		completeTask(input, dataFile, tasks)
 	case "delete":
@@ -211,6 +216,29 @@ func showTask(input string, dataFile []byte, tasks []Task) {
 		if tasks[i].ID == words[1] {
 			fmt.Println(tasks[i].Name, tasks[i].Description, tasks[i].Completed)
 		}
+	}
+
+}
+
+func addProfile(input string) {
+
+	words := strings.Split(input, " ")
+
+	conn := "host=localhost port=5432 user=admin password=root dbname=todolist sslmode=disable"
+
+	db, err := sql.Open("postgres", conn)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	query := `INSERT INTO users (name) VALUES ($1)`
+
+	_, err = db.Exec(query, words[1])
+
+	if err != nil {
+		panic(err)
 	}
 
 }
