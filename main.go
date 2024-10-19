@@ -42,18 +42,28 @@ func main() {
 	}
 
 	var tasks []Task
+	var db *sql.DB
+
+	if command != "exit" {
+		db, err = openDataBase()
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
 
 	switch command {
 	case "add":
-		addTask(input, dataFile, tasks)
+		addTask(input, dataFile, tasks, db)
 	case "addProfile":
-		addProfile(input)
+		addProfile(input, db)
 	case "complete":
-		completeTask(input, dataFile, tasks)
+		completeTask(input, dataFile, tasks, db)
 	case "delete":
-		deleteTask(input, dataFile, tasks)
+		deleteTask(input, dataFile, tasks, db)
 	case "show":
-		showTask(input, dataFile, tasks)
+		showTask(input, dataFile, tasks, db)
 	case "exit":
 		return
 	default:
@@ -97,7 +107,7 @@ func clearJSONfile(filename string, Massive []Task) error {
 
 }
 
-func addTask(input string, dataFile []byte, tasks []Task) {
+func addTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 
 	words := strings.Split(input, " - ")
 
@@ -141,7 +151,7 @@ func addTask(input string, dataFile []byte, tasks []Task) {
 
 }
 
-func completeTask(input string, dataFile []byte, tasks []Task) {
+func completeTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 
 	words := strings.Split(input, " ")
 
@@ -171,9 +181,17 @@ func completeTask(input string, dataFile []byte, tasks []Task) {
 		return
 	}
 
+	query := `update tasks set complete = true where id = $1 and complete = false`
+
+	_, err = db.Exec(query, words[1])
+
+	if err != nil {
+		panic(err)
+	}
+
 }
 
-func deleteTask(input string, dataFile []byte, tasks []Task) {
+func deleteTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 
 	words := strings.Split(input, " ")
 
@@ -201,7 +219,7 @@ func deleteTask(input string, dataFile []byte, tasks []Task) {
 
 }
 
-func showTask(input string, dataFile []byte, tasks []Task) {
+func showTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 
 	words := strings.Split(input, " ")
 
@@ -220,25 +238,26 @@ func showTask(input string, dataFile []byte, tasks []Task) {
 
 }
 
-func addProfile(input string) {
+func addProfile(input string, db *sql.DB) {
 
 	words := strings.Split(input, " ")
+
+	query := `INSERT INTO users (name) VALUES ($1)`
+
+	_, err := db.Exec(query, words[1])
+
+	if err != nil {
+		panic(err)
+	}
+
+}
+
+func openDataBase() (*sql.DB, error) {
 
 	conn := "host=localhost port=5432 user=admin password=root dbname=todolist sslmode=disable"
 
 	db, err := sql.Open("postgres", conn)
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	query := `INSERT INTO users (name) VALUES ($1)`
-
-	_, err = db.Exec(query, words[1])
-
-	if err != nil {
-		panic(err)
-	}
+	return db, err
 
 }
