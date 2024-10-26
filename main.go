@@ -20,7 +20,13 @@ type Task struct {
 
 func main() {
 
-	fmt.Println("запись в формате команда - задача - описание задачи: ")
+	fmt.Println("Выберите команду: ")
+	fmt.Println("add - задача - описание задачи")
+	fmt.Println("addProfile Имя")
+	fmt.Println("complete ID")
+	fmt.Println("delete ID")
+	fmt.Println("show ID")
+	fmt.Println("exit")
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -67,7 +73,7 @@ func main() {
 	case "exit":
 		return
 	default:
-		fmt.Println("Неизвестная команда. Доступные команды: add, complete, delete, show")
+		fmt.Println("Неизвестная команда. Доступные команды: add, complete, delete, show, addProfile, exit")
 	}
 
 }
@@ -149,6 +155,14 @@ func addTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 
 	fmt.Println("Save file!")
 
+	query := `insert into tasks (userid, task, decription, complete) VALUES ($1, $2, $3, false)`
+
+	_, err = db.Exec(query, 1, words[1], words[2])
+
+	if err != nil {
+		panic(err)
+	}
+
 }
 
 func completeTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
@@ -217,6 +231,16 @@ func deleteTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 		return
 	}
 
+	query := `delete from tasks where ID = $1`
+
+	_, err = db.Exec(query, words[1])
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Удалено")
+
 }
 
 func showTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
@@ -234,6 +258,29 @@ func showTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 		if tasks[i].ID == words[1] {
 			fmt.Println(tasks[i].Name, tasks[i].Description, tasks[i].Completed)
 		}
+	}
+
+	query := `select ID, task, decription, complete from tasks where ID = $1`
+
+	rows, err := db.Query(query, words[1])
+
+	if rows.Next() {
+
+		err := rows.Scan(&tasks[0].ID, &tasks[0].Name, &tasks[0].Description, &tasks[0].Completed)
+
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("ID: ", tasks[0].ID)
+		fmt.Println("Наименование: ", tasks[0].Name)
+		fmt.Println("Описание: ", tasks[0].Description)
+		fmt.Println("Выполнено: ", tasks[0].Completed)
+
+	}
+
+	if err != nil {
+		panic(err)
 	}
 
 }
