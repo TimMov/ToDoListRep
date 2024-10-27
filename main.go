@@ -18,7 +18,36 @@ type Task struct {
 	Completed   bool   `json:"completed"`   // Статус задачи (выполнена или нет)
 }
 
+type User struct {
+	Name string `json:"name"`
+	Pass string `json:"pass"`
+}
+
 func main() {
+
+	var name string
+	var pass string
+
+	var tasks []Task
+	var Users []User
+	var db *sql.DB
+
+	db, err := openDataBase()
+
+	fmt.Print("Введите логин: ")
+	fmt.Fscan(os.Stdin, &name)
+
+	fmt.Print("Введите пароль: ")
+	fmt.Fscan(os.Stdin, &pass)
+
+	Users = Verification(name, pass, db)
+
+	if len(Users) == 0 {
+
+		fmt.Println("Неверный логин или пароль")
+		return
+
+	}
 
 	fmt.Println("Выберите команду: ")
 	fmt.Println("add - задача - описание задачи - ID")
@@ -47,7 +76,7 @@ func main() {
 		return
 	}
 
-	var tasks []Task
+	/*var tasks []Task
 	var db *sql.DB
 
 	if command != "exit" {
@@ -57,7 +86,7 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-	}
+	}*/
 
 	switch command {
 	case "add":
@@ -349,5 +378,32 @@ func openDataBase() (*sql.DB, error) {
 	db, err := sql.Open("postgres", conn)
 
 	return db, err
+
+}
+
+func Verification(name string, pass string, db *sql.DB) []User {
+
+	var Users []User
+
+	query := `select name, password from users where name = $1 and password = $2`
+
+	rows, err := db.Query(query, name, pass)
+
+	if err != nil {
+		panic(err)
+	}
+
+	if rows.Next() {
+
+		Users = append(Users, User{})
+		err := rows.Scan(&Users[0].Name, &Users[0].Pass)
+
+		if err != nil {
+			panic(err)
+		}
+
+	}
+
+	return Users
 
 }
