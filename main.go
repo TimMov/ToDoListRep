@@ -21,7 +21,7 @@ type Task struct {
 func main() {
 
 	fmt.Println("Выберите команду: ")
-	fmt.Println("add - задача - описание задачи")
+	fmt.Println("add - задача - описание задачи - ID")
 	fmt.Println("addProfile Имя")
 	fmt.Println("complete ID")
 	fmt.Println("delete ID")
@@ -117,6 +117,13 @@ func addTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 
 	words := strings.Split(input, " - ")
 
+	if len(words) != 4 {
+		fmt.Println("Неккоректный ввод команды")
+		fmt.Println("Попробуйте ввести в формате: add - задача - описание задачи - ID")
+
+		return
+	}
+
 	i := Task{
 		ID:          words[3],
 		Name:        words[1],
@@ -169,6 +176,15 @@ func completeTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 
 	words := strings.Split(input, " ")
 
+	if len(words) != 2 {
+
+		fmt.Println("Неккоректный ввод команды")
+		fmt.Println("Попробуйте ввести в формате: completeTask ID")
+
+		return
+
+	}
+
 	err := json.Unmarshal(dataFile, &tasks)
 
 	if err != nil {
@@ -209,6 +225,15 @@ func deleteTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 
 	words := strings.Split(input, " ")
 
+	if len(words) != 2 {
+
+		fmt.Println("Неккоректный ввод команды")
+		fmt.Println("Попробуйте ввести в формате: deleteTask ID")
+
+		return
+
+	}
+
 	err := json.Unmarshal(dataFile, &tasks)
 
 	if err != nil {
@@ -246,6 +271,15 @@ func deleteTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 func showTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 
 	words := strings.Split(input, " ")
+
+	if len(words) != 2 {
+
+		fmt.Println("Неккоректный ввод команды")
+		fmt.Println("Попробуйте ввести в формате: showTask ID")
+
+		return
+
+	}
 
 	err := json.Unmarshal(dataFile, &tasks)
 
@@ -288,6 +322,15 @@ func showTask(input string, dataFile []byte, tasks []Task, db *sql.DB) {
 func addProfile(input string, db *sql.DB) {
 
 	words := strings.Split(input, " ")
+
+	if len(words) != 2 {
+
+		fmt.Println("Неккоректный ввод команды")
+		fmt.Println("Попробуйте ввести в формате: addProfile Имя пользователя")
+
+		return
+
+	}
 
 	query := `INSERT INTO users (name) VALUES ($1)`
 
